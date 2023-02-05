@@ -10,6 +10,7 @@ public class Main {
     private static final int PORT = 8989;
 
     public static void main(String[] args) throws Exception {
+
         try (ServerSocket serverSocket = new ServerSocket(PORT)) { // стартуем сервер
             System.out.println("Server started");
             CategorizingPurchases categorizingPurchases = new CategorizingPurchases();

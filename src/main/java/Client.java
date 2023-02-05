@@ -1,5 +1,3 @@
-import org.json.simple.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,15 +14,12 @@ public class Client {
         try (Socket socket = new Socket(HOST, PORT);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            ) {
+        ) {
             System.out.println(in.readLine());
             String input = scanner.nextLine();
             String[] parts = input.split(", ");
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("title", parts[0]);
-            jsonObject.put("date", parts[1]);
-            jsonObject.put("sum", parts[2]);
-            out.println(jsonObject);
+            Purchase purchase = new Purchase(parts[0], parts[1], Integer.parseInt(parts[2]));
+            out.println(purchase.toJson(purchase));
             System.out.println(in.readLine());
         } catch (IOException e) {
             throw new RuntimeException(e);

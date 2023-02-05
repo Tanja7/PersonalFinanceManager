@@ -1,5 +1,9 @@
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+
 public class Purchase {
     // класс параметров одной покупки
     private final String date; //дата покупки
@@ -16,6 +20,7 @@ public class Purchase {
         this.sum = sum;
     }
 
+
     public String getDate() {
         return date;
     }
@@ -26,5 +31,12 @@ public class Purchase {
 
     public int getSum() {
         return sum;
+    }
+
+    public String toJson(Purchase purchase) throws IOException {
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.toJson(purchase);
     }
 }
