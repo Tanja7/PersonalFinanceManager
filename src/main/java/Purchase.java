@@ -3,13 +3,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 public class Purchase {
     // класс параметров одной покупки
-    private final String date; //дата покупки
+
+   private final String date; //дата покупки
+
+  //  private final LocalDate date; //дата покупки
     private final String title; // наименование покупки
     private final int sum; // сумма покупки
-// //  LocalDate date = LocalDate.parse(parts[1]);
+
 
     public Purchase(
             @JsonProperty("title") String title,
