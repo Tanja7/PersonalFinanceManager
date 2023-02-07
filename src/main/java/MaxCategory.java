@@ -1,4 +1,3 @@
-import org.json.simple.JSONObject;
 
 public class MaxCategory {
 
@@ -18,12 +17,4 @@ public class MaxCategory {
         return sum;
     }
 
-//        public String toJson(String nameCategory, int sumCategory) {
-//
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("category", nameCategory);
-//        jsonObject.put("sum", sumCategory);
-//
-//        return "\"maxCategory\": " + jsonObject;
-//    }
 }

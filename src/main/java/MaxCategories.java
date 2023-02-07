@@ -22,7 +22,7 @@ public class MaxCategories {
         this.maxCategoryDay = maxCategoryDay;
     }
 
-    public String toJson(MaxCategories maxCategories) throws IOException {
+    public String toJson(MaxCategories maxCategories) {
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();

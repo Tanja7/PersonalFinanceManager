@@ -33,7 +33,9 @@ public class CategorizingPurchases {
     private Map<String, Integer> sumCategoriesYear = new HashMap<>();
     private Map<String, Integer> sumCategoriesMonth = new HashMap<>();
     private Map<String, Integer> sumCategoriesDay = new HashMap<>();
-
+    private MaxCategory maxCategoryYear;
+    private MaxCategory maxCategoryMonth;
+    private MaxCategory maxCategoryDay;
     private final List<Purchase> purchasesAll = new ArrayList<>();
 
     public String distributionAll(String message) throws Exception {
@@ -50,63 +52,49 @@ public class CategorizingPurchases {
         // найти название категории с максимальной суммой
         String nameMaxCategory = findNameMaxCategory(sumCategories, sumMaxCategory);
         MaxCategory maxCategory = new MaxCategory(nameMaxCategory, sumMaxCategory);
-        MaxCategory maxCategoryYear = distributionYear(purchasesAll, purchases);
-        MaxCategory maxCategoryMonth = distributionMonth(purchasesAll, purchases);
-        MaxCategory maxCategoryDay = distributionDay(purchasesAll, purchases);
-        MaxCategories maxCategories = new MaxCategories(maxCategory,maxCategoryYear,maxCategoryMonth,maxCategoryDay);
+        distributionDate(purchasesAll, purchases);
+        MaxCategories maxCategories = new MaxCategories(maxCategory, maxCategoryYear, maxCategoryMonth, maxCategoryDay);
         // вернуть JSON по MaxCategories
         return maxCategories.toJson(maxCategories);
     }
 
-    public MaxCategory distributionYear(List<Purchase> purchaseList, Purchase purchase) {
-        LocalDate datePurchase = LocalDate.parse(purchase.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
-        int yearPurchase = datePurchase.getYear();
-        sumCategoriesYear.clear();
-        purchaseList.stream()
-                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getYear() == yearPurchase)
-                .forEach(value -> {
-                    String category = categoryDefinition(value.getTitle());
-                    sumCategoriesYear = purchaseSumByCategory(sumCategoriesYear, category, value.getSum());
-                });
-        int sumMaxCategoryYear = findSumMaxCategory(sumCategoriesYear);
-        String nameMaxCategoryYear = findNameMaxCategory(sumCategoriesYear, sumMaxCategoryYear);
-        return new MaxCategory(nameMaxCategoryYear, sumMaxCategoryYear);
-    }
-    public MaxCategory distributionMonth(List<Purchase> purchaseList, Purchase purchase) {
-        LocalDate datePurchase = LocalDate.parse(purchase.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
-        int yearPurchase = datePurchase.getYear();
-        int monthPurchase = datePurchase.getMonthValue();
-        sumCategoriesMonth.clear();
-        purchaseList.stream()
-                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getYear() == yearPurchase
-                        && LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getMonthValue() == monthPurchase)
-                .forEach(value -> {
-                    String category = categoryDefinition(value.getTitle());
-                    sumCategoriesMonth = purchaseSumByCategory(sumCategoriesMonth, category, value.getSum());
-                });
-        int sumMaxCategoryMonth = findSumMaxCategory(sumCategoriesMonth);
-        String nameMaxCategoryMonth = findNameMaxCategory(sumCategoriesMonth, sumMaxCategoryMonth);
-        return new MaxCategory(nameMaxCategoryMonth, sumMaxCategoryMonth);
-    }
-
-    public MaxCategory distributionDay(List<Purchase> purchaseList, Purchase purchase) {
+    public void distributionDate(List<Purchase> purchaseList, Purchase purchase) {
         LocalDate datePurchase = LocalDate.parse(purchase.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         int yearPurchase = datePurchase.getYear();
         int monthPurchase = datePurchase.getMonthValue();
         int dayPurchase = datePurchase.getDayOfMonth();
+        sumCategoriesYear.clear();
+        sumCategoriesMonth.clear();
         sumCategoriesDay.clear();
         purchaseList.stream()
-                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getYear() == yearPurchase
-                        && LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getMonthValue() == monthPurchase
-                        && LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getDayOfMonth() == dayPurchase)
+                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getYear() == yearPurchase)
                 .forEach(value -> {
-                    String category = categoryDefinition(value.getTitle());
-                    sumCategoriesDay = purchaseSumByCategory(sumCategoriesDay, category, value.getSum());
+                    String categoryYear = categoryDefinition(value.getTitle());
+                    sumCategoriesYear = purchaseSumByCategory(sumCategoriesYear, categoryYear, value.getSum());
                 });
+        purchaseList.stream()
+                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getMonthValue() == monthPurchase)
+                .forEach(value -> {
+                    String categoryMonth = categoryDefinition(value.getTitle());
+                    sumCategoriesMonth = purchaseSumByCategory(sumCategoriesMonth, categoryMonth, value.getSum());
+                });
+        purchaseList.stream()
+                .filter(value -> LocalDate.parse(value.getDate(), DateTimeFormatter.ofPattern("yyyy.MM.dd")).getDayOfMonth() == dayPurchase)
+                .forEach(value -> {
+                    String categoryDay = categoryDefinition(value.getTitle());
+                    sumCategoriesDay = purchaseSumByCategory(sumCategoriesDay, categoryDay, value.getSum());
+                });
+        int sumMaxCategoryYear = findSumMaxCategory(sumCategoriesYear);
+        String nameMaxCategoryYear = findNameMaxCategory(sumCategoriesYear, sumMaxCategoryYear);
+        int sumMaxCategoryMonth = findSumMaxCategory(sumCategoriesMonth);
+        String nameMaxCategoryMonth = findNameMaxCategory(sumCategoriesMonth, sumMaxCategoryMonth);
         int sumMaxCategoryDay = findSumMaxCategory(sumCategoriesDay);
         String nameMaxCategoryDay = findNameMaxCategory(sumCategoriesDay, sumMaxCategoryDay);
-        return new MaxCategory(nameMaxCategoryDay, sumMaxCategoryDay);
+        maxCategoryYear = new MaxCategory(nameMaxCategoryYear, sumMaxCategoryYear);
+        maxCategoryMonth = new MaxCategory(nameMaxCategoryMonth, sumMaxCategoryMonth);
+        maxCategoryDay = new MaxCategory(nameMaxCategoryDay, sumMaxCategoryDay);
     }
+
     public String categoryDefinition(String titlePurchase) {
         //определение категории
         return directory.getOrDefault(titlePurchase, "другое");
@@ -155,11 +143,11 @@ public class CategorizingPurchases {
         return purchase.toJson(purchase);
     }
 
-    public static void main(String[] args) throws Exception {
-        CategorizingPurchases categorizingPurchases = new CategorizingPurchases();
-        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2022.12.12\",\"title\":\"тапки\",\"sum\":10}"));
-        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2023.01.12\",\"title\":\"мыло\",\"sum\":300}"));
-        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2022.11.23\",\"title\":\"шапка\",\"sum\":1000}"));
-        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2023.01.12\",\"title\":\"шапка\",\"sum\":100}"));
-    }
+//    public static void main(String[] args) throws Exception {
+//        CategorizingPurchases categorizingPurchases = new CategorizingPurchases();
+//        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2022.12.12\",\"title\":\"тапки\",\"sum\":10}"));
+//        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2023.01.12\",\"title\":\"мыло\",\"sum\":300}"));
+//        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2022.11.23\",\"title\":\"шапка\",\"sum\":1000}"));
+//        System.out.println(categorizingPurchases.distributionAll("{\"date\":\"2023.01.12\",\"title\":\"шапка\",\"sum\":100}"));
+//    }
 }
